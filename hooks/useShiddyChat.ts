@@ -21,6 +21,29 @@ export interface UserSession {
   isNew: boolean;
 }
 
+const shiddyNames = [
+  "ShiddyArtist", "PixelShiddy", "DoodleShiddy", "CanvasShiddy", "SketchShiddy",
+  "ShiddyChaos", "DrawShiddy", "PaintShiddy", "ArtShiddy", "ShiddySquad",
+  "BrushShiddy", "PixelPunk", "ShiddyDude", "PaintPal", "SketchStar",
+  "ColorShiddy", "ShiddyVibes", "ArtAttack", "DrawDream", "ShiddyKing"
+];
+
+const shiddyColors = [
+  '#FF0080', '#00FF80', '#8000FF', '#FF8000', '#0080FF',
+  '#80FF00', '#FF0040', '#40FF00', '#0040FF', '#FF4000'
+];
+
+function generateShiddyUser() {
+  const name = shiddyNames[Math.floor(Math.random() * shiddyNames.length)];
+  const num = Math.floor(Math.random() * 999) + 1;
+  const color = shiddyColors[Math.floor(Math.random() * shiddyColors.length)];
+  
+  return {
+    username: `${name}${num}`,
+    color: color
+  };
+}
+
 export function useShiddyChat(roomName: string = 'Global Shiddy Board') {
   const [sessionId, setSessionId] = useState<string>('');
   const [username, setUsername] = useState<string>('');
@@ -30,17 +53,40 @@ export function useShiddyChat(roomName: string = 'Global Shiddy Board') {
   const [activeUsers, setActiveUsers] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize session ID on mount
+  // Initialize session ID and auto-generate username on mount
   useEffect(() => {
     const existingSessionId = localStorage.getItem('shiddychat_session_id');
+    const existingUsername = localStorage.getItem('shiddychat_username');
+    const existingColor = localStorage.getItem('shiddychat_color');
+    
     const newSessionId = existingSessionId || uuidv4();
     
     if (!existingSessionId) {
       localStorage.setItem('shiddychat_session_id', newSessionId);
     }
     
+    // Auto-generate username if none exists
+    if (!existingUsername || !existingColor) {
+      const generatedUser = generateShiddyUser();
+      localStorage.setItem('shiddychat_username', generatedUser.username);
+      localStorage.setItem('shiddychat_color', generatedUser.color);
+      setUsername(generatedUser.username);
+      setUserColor(generatedUser.color);
+    } else {
+      setUsername(existingUsername);
+      setUserColor(existingColor);
+    }
+    
     setSessionId(newSessionId);
   }, []);
+
+  // Auto-register user when session and username are ready
+  useEffect(() => {
+    if (sessionId && username) {
+      // Auto-register user with database
+      setUserProfile(username, userColor);
+    }
+  }, [sessionId, username]);
 
   // Load messages when session is ready
   useEffect(() => {
@@ -80,7 +126,7 @@ export function useShiddyChat(roomName: string = 'Global Shiddy Board') {
     
     try {
       const response = await fetch(
-        `/api/pictochat/stats?roomName=${encodeURIComponent(roomName)}`
+        `/api/shiddychat/stats?roomName=${encodeURIComponent(roomName)}`
       );
       
       if (response.ok) {
@@ -99,7 +145,7 @@ export function useShiddyChat(roomName: string = 'Global Shiddy Board') {
     setError(null);
     
     try {
-      const response = await fetch('/api/pictochat/user', {
+      const response = await fetch('/api/shiddychat/user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +190,7 @@ export function useShiddyChat(roomName: string = 'Global Shiddy Board') {
     setError(null);
     
     try {
-      const response = await fetch('/api/pictochat/messages', {
+      const response = await fetch('/api/shiddychat/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

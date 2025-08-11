@@ -37,15 +37,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
   --font-sans: ${GeistSans.variable};
   --font-mono: ${GeistMono.variable};
-  height: 100%;
 }
 body {
-  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
         `}</style>
       </head>
@@ -56,7 +58,7 @@ body {
           enableSystem
           disableTransitionOnChange
         >
-          <main className="h-screen overflow-hidden">
+          <main className="min-h-screen">
             {children}
           </main>
           <Toaster />

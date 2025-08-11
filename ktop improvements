@@ -1,0 +1,7 @@
+warning: in the working copy of 'app/layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'database/supabase-schema.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'hooks/usePictoChat.ts', LF will be replaced by CRLF the next time Git touches it
+app/layout.tsx
+app/page.tsx
+hooks/usePictoChat.ts
