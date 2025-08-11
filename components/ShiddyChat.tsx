@@ -13,7 +13,8 @@ import {
   Palette,
   MessageSquare,
   RefreshCw,
-  Loader2
+  Loader2,
+  Undo2
 } from 'lucide-react';
 import styles from '../app/shiddy.module.css';
 import { useToast } from "@/components/ui/use-toast";
@@ -65,6 +66,8 @@ export default function ShiddyChat({
   const [textInput, setTextInput] = useState('');
   const [mousePos, setMousePos] = useState<Point | null>(null);
   const [showBrushPreview, setShowBrushPreview] = useState(false);
+  const [history, setHistory] = useState<Stroke[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -86,7 +89,6 @@ export default function ShiddyChat({
     if (!canvas) return { x: 0, y: 0 };
     
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
     
     let clientX: number, clientY: number;
     
@@ -101,10 +103,13 @@ export default function ShiddyChat({
       clientY = e.clientY;
     }
     
-    // Calculate coordinates relative to canvas, accounting for device pixel ratio
-    // Since canvas is scaled by DPR but coordinates need to be in CSS pixels
-    const x = (clientX - rect.left);
-    const y = (clientY - rect.top);
+    // The canvas is scaled by devicePixelRatio, so we need to adjust the coordinates
+    const scaleX = canvas.width / (rect.width * (window.devicePixelRatio || 1));
+    const scaleY = canvas.height / (rect.height * (window.devicePixelRatio || 1));
+    
+    // We also need to multiply by devicePixelRatio to get the correct coordinates on the scaled canvas
+    const x = (clientX - rect.left) * scaleX * (window.devicePixelRatio || 1);
+    const y = (clientY - rect.top) * scaleY * (window.devicePixelRatio || 1);
     
     return { x, y };
   };
@@ -303,7 +308,10 @@ export default function ShiddyChat({
     if (!isDrawing || !currentStroke) return;
     
     if (currentStroke.points.length > 1) {
-      setCurrentStrokes(prev => [...prev, currentStroke]);
+      const newStrokes = [...currentStrokes, currentStroke];
+      setCurrentStrokes(newStrokes);
+      setHistory(prev => [...prev.slice(0, historyIndex + 1), newStrokes]);
+      setHistoryIndex(prev => prev + 1);
     }
     
     setIsDrawing(false);
@@ -350,7 +358,23 @@ export default function ShiddyChat({
     drawBrushPreview(ctx, point);
   };
 
+  const undo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setCurrentStrokes(history[newIndex]);
+    } else if (historyIndex === 0) {
+      // If at the first real state, undo to the initial empty state
+      setHistoryIndex(-1);
+      setCurrentStrokes([]);
+    }
+  };
+
   const clearCanvas = () => {
+    if (currentStrokes.length > 0) {
+      setHistory(prev => [...prev.slice(0, historyIndex + 1), []]);
+      setHistoryIndex(prev => prev + 1);
+    }
     setCurrentStrokes([]);
     redrawCanvas();
   };
@@ -604,16 +628,28 @@ export default function ShiddyChat({
               <span className="text-xs font-bold w-6 text-center">{brushSize}</span>
             </div>
 
-            {/* Clear Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearCanvas}
-              className="w-full h-7 sm:h-8 text-xs"
-            >
-              <Trash2 className="w-3 h-3 sm:mr-1" />
-              <span className="hidden sm:inline">Clear</span>
-            </Button>
+            {/* Clear and Undo Buttons */}
+            <div className="flex gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearCanvas}
+                className="w-full h-7 sm:h-8 text-xs"
+              >
+                <Trash2 className="w-3 h-3 sm:mr-1" />
+                <span className="hidden sm:inline">Clear</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={undo}
+                className="w-full h-7 sm:h-8 text-xs"
+                disabled={historyIndex < 0}
+              >
+                <Undo2 className="w-3 h-3 sm:mr-1" />
+                <span className="hidden sm:inline">Undo</span>
+              </Button>
+            </div>
           </div>
 
                      {/* Canvas */}
