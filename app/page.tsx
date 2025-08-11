@@ -5,9 +5,9 @@ import { Copy, Check, ExternalLink } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import dynamic from 'next/dynamic';
 
-// Dynamically import PictoChat with no SSR
-const PictoChat = dynamic(
-  () => import('@/components/PictoChat'),
+// Dynamically import PictoChatDatabase with no SSR
+const PictoChatDatabase = dynamic(
+  () => import('@/components/PictoChatDatabase'),
   { ssr: false }
 );
 
@@ -244,7 +244,7 @@ export default function Home() {
         {/* MAIN FOCAL POINT - Enhanced PictoChat */}
         <div className="relative flex justify-center">
           <div className="absolute -inset-4 bg-gradient-to-r from-red-500/20 via-pink-500/20 to-orange-500/20 rounded-3xl blur-xl opacity-60"></div>
-          <PictoChat roomName="Global Shiddy Board" userName="Anon" />
+          <PictoChatDatabase roomName="Global Shiddy Board" />
         </div>
       </div>
     </div>

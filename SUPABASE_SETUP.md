@@ -88,14 +88,49 @@ The schema includes basic RLS policies that allow all operations. For production
 - Ensure the `messages` table is enabled in Replication
 - Check that RLS policies allow the operations you need
 
+## 🔌 API Endpoints
+
+Your project now includes these API endpoints for PictoChat functionality:
+
+### User Management
+- `GET /api/pictochat/user?sessionId=xyz` - Get user session info
+- `POST /api/pictochat/user` - Create/update user with username
+- `PUT /api/pictochat/user` - Update username only
+
+### Messages
+- `GET /api/pictochat/messages?roomName=Room1&limit=100` - Get recent messages
+- `POST /api/pictochat/messages` - Save new message (text/drawing/both)
+
+### Statistics
+- `GET /api/pictochat/stats?roomName=Room1` - Get active users count
+
 ## 🎯 Next Steps
 
 Once everything is working:
-1. Test creating usernames and messages
-2. Try drawing on the canvas and saving
+1. Test creating usernames and messages via the API
+2. Try drawing on the canvas and saving to database
 3. Open multiple browser tabs to test real-time updates
-4. Customize the username experience
+4. Use the PictoChat component with real database persistence
 5. Add more features like user avatars or message reactions!
+
+## 🧪 Testing the API
+
+You can test the API endpoints using curl or your browser:
+
+```bash
+# Test user creation
+curl -X POST http://localhost:3000/api/pictochat/user \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"test-123","username":"TestUser","userColor":"#FF0080"}'
+
+# Get messages
+curl "http://localhost:3000/api/pictochat/messages?roomName=Global%20Shiddy%20Board"
+
+# Save a text message
+curl -X POST http://localhost:3000/api/pictochat/messages \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"test-123","username":"TestUser","userColor":"#FF0080","messageText":"Hello PictoChat!"}'
+```
 
 ---
 

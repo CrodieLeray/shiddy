@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import DatabaseManager from '@/lib/database';
+import SupabaseManager from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 // GET - Get or create user session
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await DatabaseManager.getOrCreateUser(
+    const user = await SupabaseManager.getOrCreateUser(
       sessionId,
       username,
       userColor || '#000080'
@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    await DatabaseManager.updateUsername(sessionId, username);
+    await SupabaseManager.updateUsername(sessionId, username);
 
     return NextResponse.json({
       success: true,
