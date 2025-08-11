@@ -13,38 +13,12 @@ const ShiddyChat = dynamic(
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
-  const [contractCopied, setContractCopied] = useState(false);
   const { toast } = useToast();
-
-  // Example contract address - replace with your actual contract
-  const contractAddress = "0x742d35Cc6634C0532925a3b8D444431f3c4a8E68";
 
   useEffect(() => {
     setIsMounted(true);
     return () => setIsMounted(false);
   }, []);
-
-  // Contract address functions
-  const copyContractAddress = async () => {
-    try {
-      await navigator.clipboard.writeText(contractAddress);
-      setContractCopied(true);
-      setTimeout(() => setContractCopied(false), 2000);
-      
-      toast({
-        title: "Contract copied!",
-        description: "Address copied to clipboard",
-      });
-    } catch (err) {
-      toast({
-        title: "Copy failed",
-        description: "Please copy manually",
-        variant: "destructive",
-      });
-    }
-  };
-
-
 
   if (!isMounted) {
     return (
@@ -193,14 +167,14 @@ export default function Home() {
             <div className="flex items-center space-x-2">
               <div className="text-xs text-white/80 font-medium hidden sm:block">Contract:</div>
               <div className="font-mono text-xs text-white bg-black/20 rounded px-2 py-1">
-                {contractAddress.slice(0, 4)}...{contractAddress.slice(-3)}
+                Coming Soon
               </div>
               <button
-                onClick={copyContractAddress}
-                className="bg-white/20 hover:bg-white/30 p-1.5 rounded text-white transition-all duration-200 hover:scale-110 active:scale-95"
+                className="bg-white/20 hover:bg-white/30 p-1.5 rounded text-white transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Copy Address"
+                disabled
               >
-                {contractCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                <Copy className="w-3 h-3" />
               </button>
             </div>
           </div>
