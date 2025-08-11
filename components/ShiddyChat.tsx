@@ -86,21 +86,27 @@ export default function ShiddyChat({
     if (!canvas) return { x: 0, y: 0 };
     
     const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    
+    let clientX: number, clientY: number;
     
     // Handle touch events
     if ('touches' in e) {
       const touch = e.touches[0] || e.changedTouches[0];
-      return {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      };
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      // Handle mouse events
+      clientX = e.clientX;
+      clientY = e.clientY;
     }
     
-    // Handle mouse events
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
+    // Calculate coordinates relative to canvas, accounting for device pixel ratio
+    // Since canvas is scaled by DPR but coordinates need to be in CSS pixels
+    const x = (clientX - rect.left);
+    const y = (clientY - rect.top);
+    
+    return { x, y };
   };
 
   const drawBrushPreview = (ctx: CanvasRenderingContext2D, point: Point) => {
@@ -623,17 +629,24 @@ export default function ShiddyChat({
                  className="absolute inset-0 w-full h-full pointer-events-none"
                  style={{ imageRendering: 'pixelated' }}
                />
-               <div
-                 className="absolute inset-0 w-full h-full cursor-none touch-none"
-                 onMouseDown={startDrawing}
-                 onMouseMove={handleMouseMove}
-                 onMouseUp={endDrawing}
-                 onMouseEnter={handleMouseEnter}
-                 onMouseLeave={handleMouseLeave}
-                 onTouchStart={startDrawing}
-                 onTouchMove={handleMouseMove}
-                 onTouchEnd={endDrawing}
-               />
+                             <div
+                className="absolute inset-0 w-full h-full cursor-none touch-none"
+                onMouseDown={startDrawing}
+                onMouseMove={handleMouseMove}
+                onMouseUp={endDrawing}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={startDrawing}
+                onTouchMove={handleMouseMove}
+                onTouchEnd={endDrawing}
+                onTouchCancel={endDrawing}
+                style={{
+                  touchAction: 'none', // Prevent scrolling, zooming, and other gestures
+                  WebkitTouchCallout: 'none', // Disable callout on iOS
+                  WebkitUserSelect: 'none', // Disable text selection
+                  userSelect: 'none'
+                }}
+              />
              </div>
            </div>
         </div>

@@ -156,8 +156,19 @@ export default function PictoChat({
     if (!canvas) return { x: 0, y: 0 };
     
     const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    let clientX: number, clientY: number;
+    
+    // Handle touch events with better touch point detection
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (!touch) return { x: 0, y: 0 };
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
     
     // Calculate the scaling factor between canvas size and display size
     const scaleX = canvas.width / rect.width;
@@ -427,11 +438,15 @@ export default function PictoChat({
                 onTouchStart={startDrawing}
                 onTouchMove={draw}
                 onTouchEnd={endDrawing}
+                onTouchCancel={endDrawing}
                 className="block cursor-crosshair w-full"
                 style={{ 
                   height: '150px',
                   touchAction: 'none',
-                  imageRendering: 'pixelated'
+                  imageRendering: 'pixelated',
+                  WebkitTouchCallout: 'none',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none'
                 }}
               />
             </div>

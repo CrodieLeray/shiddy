@@ -171,16 +171,36 @@ export default function BookWidget() {
     });
   };
 
+  const getCanvasCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return { x: 0, y: 0 };
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    
+    let clientX: number, clientY: number;
+    
+    // Handle touch events
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (!touch) return { x: 0, y: 0 };
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      // Handle mouse events
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = (e as React.MouseEvent).clientX ? 
-      (e as React.MouseEvent).clientX - rect.left : 
-      (e as React.TouchEvent).touches[0].clientX - rect.left;
-    const y = (e as React.MouseEvent).clientY ? 
-      (e as React.MouseEvent).clientY - rect.top : 
-      (e as React.TouchEvent).touches[0].clientY - rect.top;
+    e.preventDefault(); // Prevent scrolling on touch
+    const { x, y } = getCanvasCoordinates(e);
 
     const newStroke: Stroke = {
       points: [{ x, y }],
@@ -202,13 +222,7 @@ export default function BookWidget() {
     
     e.preventDefault();
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = (e as React.MouseEvent).clientX ? 
-      (e as React.MouseEvent).clientX - rect.left : 
-      (e as React.TouchEvent).touches[0].clientX - rect.left;
-    const y = (e as React.MouseEvent).clientY ? 
-      (e as React.MouseEvent).clientY - rect.top : 
-      (e as React.TouchEvent).touches[0].clientY - rect.top;
+    const { x, y } = getCanvasCoordinates(e);
 
     const updatedStroke = {
       ...currentStroke,
@@ -372,9 +386,13 @@ export default function BookWidget() {
                 onTouchStart={startDrawing}
                 onTouchMove={draw}
                 onTouchEnd={endDrawing}
+                onTouchCancel={endDrawing}
                 className="absolute inset-0 w-full h-full cursor-crosshair"
                 style={{
                   touchAction: 'none',
+                  WebkitTouchCallout: 'none',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none'
                 }}
               />
               

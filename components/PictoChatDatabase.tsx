@@ -148,18 +148,41 @@ export default function PictoChatDatabase({
     });
   }, [currentStrokes]);
 
+  // Helper function for coordinate calculation
+  const getCanvasCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return { x: 0, y: 0 };
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    
+    let clientX: number, clientY: number;
+    
+    // Handle touch events
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (!touch) return { x: 0, y: 0 };
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      // Handle mouse events
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+
   // Drawing functions
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
     
+    e.preventDefault(); // Prevent scrolling on touch
     setIsDrawing(true);
     setIsMouseDown(true);
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const point = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
+    const point = getCanvasCoordinates(e);
     
     setCurrentStroke({
       points: [point],
@@ -168,14 +191,11 @@ export default function PictoChatDatabase({
     });
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !currentStroke || !canvasRef.current) return;
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const point = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
+    e.preventDefault(); // Prevent scrolling on touch
+    const point = getCanvasCoordinates(e);
     
     const updatedStroke = {
       ...currentStroke,
@@ -496,6 +516,16 @@ export default function PictoChatDatabase({
               onMouseMove={draw}
               onMouseUp={endDrawing}
               onMouseLeave={endDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={endDrawing}
+              onTouchCancel={endDrawing}
+              style={{
+                touchAction: 'none',
+                WebkitTouchCallout: 'none',
+                WebkitUserSelect: 'none',
+                userSelect: 'none'
+              }}
             />
           </div>
         </div>
